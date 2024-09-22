@@ -1,4 +1,5 @@
 import Data.Maybe (catMaybes)
+
 -- 1 listnums
 -- listnums: берет численный аргумент n  и возвращает список всех чисел от n до 1, включительно
 -- Примеры:
@@ -9,8 +10,8 @@ import Data.Maybe (catMaybes)
 
 listNums :: Int -> [Int]
 listNums n
-  | n <= 0    = []             -- Если n меньше или равно 0, возвращаем пустой список
-  | otherwise = [n, n-1 .. 1]  -- Генерируем список от n до 1
+  | n <= 0    = []                    -- Если n меньше или равно 0, возвращаем пустой список
+  | otherwise = n : listNums (n - 1)  -- Рекурсивно добавляем n в список
 
 callListNums :: IO ()
 callListNums = do
@@ -46,12 +47,10 @@ callListNums = do
 -- secondLastList [[]]                     -> []
 
 secondLastList :: [[a]] -> [a]
-secondLastList = catMaybes . map lastButOne
-  where
-    lastButOne :: [a] -> Maybe a
-    lastButOne [] = Nothing              -- Возвращаем Nothing для пустого списка
-    lastButOne [x] = Just x              -- Возвращаем единственный элемент в Just
-    lastButOne xs = Just (last xs)       -- Возвращаем последний элемент в Just
+secondLastList [] = []
+secondLastList (x:xs)
+    | null x    = secondLastList xs  -- Пропускаем пустой список
+    | otherwise = last x : secondLastList xs  -- Добавляем последний элемент и рекурсивно вызываем для остального списка
 
 callSecondLastList :: IO ()
 callSecondLastList = do
@@ -88,8 +87,12 @@ callSecondLastList = do
 -- myunion [] [7, 8, 9]        -> [7, 8, 9]
 -- myunion [] []               -> []
 
-myunion :: Eq a => [a] -> [a] -> [a]  -- поддержка сравнения на равенство
-myunion xs ys = xs ++ [y | y <- ys, y `notElem` xs]  -- xs ++ перебор элементов y элементов (y | y <- ys) из второго списка, которых нет в xs
+myunion :: Eq a => [a] -> [a] -> [a]
+myunion [] ys = ys  -- Если первый список пустой, возвращаем второй список
+myunion xs [] = xs  -- Если второй список пустой, возвращаем первый список
+myunion xs (y:ys)
+    | y `elem` xs = myunion xs ys  -- Если y уже есть в xs, продолжаем рекурсию с оставшимися ys
+    | otherwise   = myunion (xs ++ [y]) ys  -- Если y нет в xs, добавляем его и продолжаем рекурсию
 
 callMyUnion :: IO ()
 callMyUnion = do
@@ -130,7 +133,10 @@ callMyUnion = do
 -- mysubst [1, 2, 3] []       -> [1, 2, 3]
 
 mysubst :: Eq a => [a] -> [a] -> [a]
-mysubst xs ys = [x | x <- xs, x `notElem` ys]
+mysubst [] _ = []  -- Если первый список пустой, результат пустой
+mysubst (x:xs) ys
+    | x `elem` ys = mysubst xs ys      -- Если x есть во втором списке, пропускаем его
+    | otherwise   = x : mysubst xs ys  -- Если x нет во втором списке, добавляем его в результат
 
 callMySubst :: IO ()
 callMySubst = do
