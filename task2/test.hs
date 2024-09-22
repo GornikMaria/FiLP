@@ -1,4 +1,3 @@
-
 module DeclarationFunctions where
 
 -- 1 oddEven(L)
