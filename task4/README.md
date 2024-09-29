@@ -20,18 +20,31 @@ d) Возникает ошибка, и вставка не происходит.
 Вопрос 2: Какой из следующих вариантов кода правильно определяет функцию myTail?
 
 a) 
+```cpp
 myTail [ ] = [ ]
 myTail (x:xs) = xs
+```
 
 b)
+```cpp
 myTail [] = []
 myTail (x:xs) = x
+```
 
-c) myTail xs = tail xs
+c) 
+```cpp
+myTail xs = tail xs
+```
 
-d) myTail xs = xs
+d) 
+```cpp
+myTail xs = xs
+```
 
-Правильный ответ: a) myTail [ ] = [ ]
-                     myTail (x:xs) = xs
+Правильный ответ: a)
+```cpp
+myTail [ ] = [ ]
+myTail (x:xs) = xs
+```
 
 
