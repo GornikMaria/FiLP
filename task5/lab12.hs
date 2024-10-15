@@ -1,31 +1,22 @@
--- 2. Скопировать информацию из одного файла в другой, заменив знаки  пунктуации заданным с клавиатуры символом. Имена файлов указываются в командной строке.
-
--- 2.1 Реализация
-import System.IO
-import Data.Char (isPunctuation)
+import System.Environment (getArgs)
 
 replacePunctuation :: Char -> String -> String
-replacePunctuation replacement = map (\c -> if isPunctuation c then replacement else c)
+replacePunctuation _ [] = []
+replacePunctuation newChar (x:xs)
+  | x == '.' || x == ',' || x == ';' = newChar : replacePunctuation newChar xs 
+  | otherwise = x : replacePunctuation newChar xs
 
-readString :: String -> IO String
-readString description = do
-    putStrLn description
-    input <- getLine
-    return input
-
-readChar :: String -> IO Char
-readChar description = do
-    input <- readString description
-    return (head input)
+processFile :: FilePath -> FilePath -> Char -> IO ()
+processFile sourceFile targetFile replaceChar = do
+  content <- readFile sourceFile
+  let newContent = replacePunctuation replaceChar content 
+  writeFile targetFile newContent
 
 main :: IO ()
 main = do
-  inputFile <- readString "Введите входной файл:"
-  outputFile <- readString "Введите выходной файл:"
-  replacementChar <- readChar "Введите символ, которым заменить:"
-
-  fileContent <- readFile inputFile
-
-  let outputFileContent = replacePunctuation replacementChar fileContent
-
-  writeFile outputFile outputFileContent
+  args <- getArgs
+  case args of
+    [sourceFile, targetFile, replaceCharStr] -> do
+      let replaceChar = head replaceCharStr
+      processFile sourceFile targetFile replaceChar
+    _ -> putStrLn "Usage: program <sourceFile> <targetFile> <replaceChar>" 
