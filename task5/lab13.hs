@@ -2,62 +2,55 @@
 --    удаление какой-либо строки, копирование содержимого в новый файл с использованием двух видов фильтрации ( фильтр выбираем самостоятельно)
 
 import System.IO
+import System.Environment
+import Control.Monad
+import Data.List
 import System.Environment (getArgs)
-import Data.Char (toUpper, toLower)
-import Control.Exception (evaluate)
 
 viewFile :: FilePath -> IO ()
-viewFile filePath = do
-    content <- readFile filePath
-    putStrLn "Содержимое файла:"
-    putStrLn content
+viewFile filename = do
+    contents <- readFile filename
+    putStrLn contents
 
-addLineToFile :: FilePath -> String -> IO ()
-addLineToFile filePath newLine = do
-    appendFile filePath ("\n" ++ newLine)
-    putStrLn "Строка добавлена."
+addToFile :: FilePath -> String -> IO ()
+addToFile filename content = do
+    appendFile filename (content ++ "\n")
+    putStrLn "Content added successfully."
 
+deleteLine :: FilePath -> Int -> IO ()
+deleteLine filename lineNumber = do
+    contents <- readFile filename
+    let linesOfFile = lines contents
+    let newContents = unlines $ deleteAt (lineNumber - 1) linesOfFile
+    writeFile filename newContents
+    putStrLn "Line deleted successfully."
 
-deleteLineFromFile :: FilePath -> Int -> IO ()
-deleteLineFromFile filePath lineNumber = do
-    withFile filePath ReadMode $ \handle -> do
-        content <- hGetContents handle
-        _ <- evaluate (length content)
-        let linesContent = lines content
-        let newContent = unlines $ deleteElementAt (lineNumber - 1) linesContent
+copyFileWithFilter :: FilePath -> FilePath -> String -> IO ()
+copyFileWithFilter source target filterType = do
+    contents <- readFile source
+    let filteredContents = filterContent (lines contents) filterType
+    writeFile target (unlines filteredContents)
+    putStrLn "File copied with filter successfully."
 
-        withFile filePath WriteMode $ \writeHandle -> do
-            hPutStr writeHandle newContent
-    putStrLn "Строка удалена."
+filterContent :: [String] -> String -> [String]
+filterContent lines filterType
+    | filterType == "length_greater_than_10" = filter (\line -> length line > 10) lines
+    | filterType == "contains_hello" = filter (isInfixOf "hello") lines
+    | otherwise = lines  -- если фильтр неизвестный, просто вернуть все строки
 
-deleteElementAt :: Int -> [a] -> [a]
-deleteElementAt idx xs = let (ys, zs) = splitAt idx xs in ys ++ drop 1 zs
-
-copyWithFilter :: FilePath -> FilePath -> Int -> IO ()
-copyWithFilter inputFile outputFile filterMode = do
-    content <- readFile inputFile
-    let filteredContent = case filterMode of
-            1 -> map toUpper content
-            2 -> map toLower content
-            _ -> content
-    writeFile outputFile filteredContent
-    putStrLn "Копирование завершено."
+deleteAt :: Int -> [a] -> [a]
+deleteAt idx xs = take idx xs ++ drop (idx + 1) xs
 
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
-        ("view" : inputFile : _) -> viewFile inputFile
-
-        ("add" : inputFile : newLine : _) -> addLineToFile inputFile newLine
-
-        ("delete" : inputFile : lineStr : _) -> do
-            let lineNumber = read lineStr
-            deleteLineFromFile inputFile lineNumber
-
-        ("copy" : inputFile : outputFile : filterModeStr : _) -> do
-            let filterMode = read filterModeStr
-            copyWithFilter inputFile outputFile filterMode
-
-        _ -> putStrLn "Usage: view <file> | add <file> <line> | delete <file> <line_number> | copy <file> <output_file> <filter_mode>"
+        ["view", filename] -> viewFile filename
+        ["add", filename, content] -> addToFile filename content
+        ["delete", filename, lineNumberStr] -> do
+            let lineNumber = read lineNumberStr :: Int
+            deleteLine filename lineNumber
+        ["copy", source, target, filterType] -> do
+            copyFileWithFilter source target filterType
+        _ -> putStrLn "Usage: view|add|delete|copy [filename] [content|lineNumber|target] [filterType]"

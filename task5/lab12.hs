@@ -1,22 +1,15 @@
 import System.Environment (getArgs)
+import Data.Char (isPunctuation)
+import System.IO
 
-replacePunctuation :: Char -> String -> String
-replacePunctuation _ [] = []
-replacePunctuation newChar (x:xs)
-  | x == '.' || x == ',' || x == ';' = newChar : replacePunctuation newChar xs 
-  | otherwise = x : replacePunctuation newChar xs
-
-processFile :: FilePath -> FilePath -> Char -> IO ()
-processFile sourceFile targetFile replaceChar = do
-  content <- readFile sourceFile
-  let newContent = replacePunctuation replaceChar content 
-  writeFile targetFile newContent
-
-main :: IO ()
 main = do
-  args <- getArgs
-  case args of
-    [sourceFile, targetFile, replaceCharStr] -> do
-      let replaceChar = head replaceCharStr
-      processFile sourceFile targetFile replaceChar
-    _ -> putStrLn "Usage: program <sourceFile> <targetFile> <replaceChar>" 
+    args <- getArgs
+    case args of
+        [sourceFile, targetFile] -> do
+            putStrLn "Введите символ для замены знаков пунктуации:"
+            replacementChar <- getChar
+            content <- readFile sourceFile
+            let newContent = map (\c -> if isPunctuation c then replacementChar else c) content
+            writeFile targetFile newContent
+            putStrLn $ "Файл '" ++ sourceFile ++ "' был скопирован в '" ++ targetFile ++ "' с заменой знаков пунктуации на '" ++ [replacementChar] ++ "'."
+        _ -> putStrLn "Ошибка: Необходимо указать два аргумента - исходный файл и целевой файл."
