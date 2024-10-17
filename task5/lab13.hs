@@ -3,7 +3,6 @@
 
 import System.IO
 import System.Environment
-import Control.Monad
 import Data.List
 import System.Environment (getArgs)
 
