@@ -11,6 +11,6 @@ main = do
     start <- readLn
     putStrLn "Введите кратность: "
     step <- readLn
-    let (Just first) = find (\x -> x `mod` step == 0) [start..]
+    let first = head $ filter (\x -> x `mod` step == 0) [start..]
     let numbers = take count [first, first + step ..]
     print numbers
