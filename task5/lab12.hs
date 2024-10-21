@@ -3,13 +3,13 @@ import Data.Char (isPunctuation)
 import System.IO
 
 main = do
-    args <- getArgs
-    case args of
-        [sourceFile, targetFile] -> do
+    params <- getArgs
+    case params of
+        [inputFile, outputFile] -> do
             putStrLn "Введите символ для замены знаков пунктуации:"
-            replacementChar <- getChar
-            content <- readFile sourceFile
-            let newContent = map (\c -> if isPunctuation c then replacementChar else c) content
-            writeFile targetFile newContent
-            putStrLn $ "Файл '" ++ sourceFile ++ "' был скопирован в '" ++ targetFile ++ "' с заменой знаков пунктуации на '" ++ [replacementChar] ++ "'."
-        _ -> putStrLn "Ошибка: Необходимо указать два аргумента - исходный файл и целевой файл."
+            replacement <- getChar
+            text <- readFile inputFile
+            let modifiedText = map (\ch -> if isPunctuation ch then replacement else ch) text
+            writeFile outputFile modifiedText
+            putStrLn $ "Файл '" ++ inputFile ++ "' был обработан и сохранен как '" ++ outputFile ++ "' с заменой знаков пунктуации на '" ++ [replacement] ++ "'."
+        _ -> putStrLn "Ошибка: Укажите два аргумента - исходный файл и файл для записи."
